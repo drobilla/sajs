@@ -29,7 +29,7 @@ make_output(SajsStatus const  status,
 static SajsTextOutput
 emit_nothing(void)
 {
-  return make_output(SAJS_SUCCESS, SAJS_PREFIX_NONE, 0U, 0U, NULL);
+  return make_output(SAJS_SUCCESS, SAJS_PREFIX_NONE, 0U, 0U, "");
 }
 
 // Write a single byte to the output

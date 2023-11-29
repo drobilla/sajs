@@ -34,6 +34,15 @@
 #  define SAJS_CONST_FUNC ///< Only reads its parameters
 #endif
 
+// Clang nullability attributes
+#if defined(__clang__) && __clang_major__ >= 7
+#  define SAJS_NONNULL _Nonnull
+#  define SAJS_ALLOCATED _Null_unspecified
+#else
+#  define SAJS_NONNULL   ///< A non-null pointer
+#  define SAJS_ALLOCATED ///< A new pointer (only null if out of memory)
+#endif
+
 /** Status code. */
 typedef enum {
   SAJS_SUCCESS,                ///< Success
@@ -158,7 +167,7 @@ typedef struct SajsLexerImpl SajsLexer;
    Returns a non-null pointer to a static constant string, in English,
    capitalized without a trailing period.
 */
-SAJS_API SAJS_CONST_FUNC char const*
+SAJS_API SAJS_CONST_FUNC char const* SAJS_NONNULL
 sajs_strerror(SajsStatus st);
 
 /**
@@ -171,8 +180,8 @@ sajs_strerror(SajsStatus st);
    The memory must be word-aligned and at least 48 bytes.  NULL is returned if
    not enough space is available.
 */
-SAJS_API SajsLexer*
-sajs_lexer_init(size_t mem_size, void* mem);
+SAJS_API SajsLexer* SAJS_ALLOCATED
+sajs_lexer_init(size_t mem_size, void* SAJS_NONNULL mem);
 
 /**
    Read one byte and return any result.
@@ -182,14 +191,14 @@ sajs_lexer_init(size_t mem_size, void* mem);
    if reading the character produced output.
 */
 SAJS_API SajsResult
-sajs_read_byte(SajsLexer* lexer, int c);
+sajs_read_byte(SajsLexer* SAJS_NONNULL lexer, int c);
 
 /**
    A view of an immutable string slice with a length.
 */
 typedef struct {
-  char const* data;   ///< Pointer to the first character
-  size_t      length; ///< Length of string in bytes
+  char const* SAJS_NONNULL data;   ///< Pointer to the first character
+  size_t                   length; ///< Length of string in bytes
 } SajsStringView;
 
 /**
@@ -200,7 +209,7 @@ typedef struct {
    changed by reading another character, or is reset.
 */
 SAJS_API SAJS_PURE_FUNC SajsStringView
-sajs_string(SajsLexer const* lexer);
+sajs_string(SajsLexer const* SAJS_NONNULL lexer);
 
 /**
    JSON writer state.
@@ -216,8 +225,8 @@ typedef struct SajsWriterImpl SajsWriter;
    word-aligned and at least 32 bytes.  NULL is returned if not enough space is
    available.
 */
-SAJS_API SajsWriter*
-sajs_writer_init(size_t mem_size, void* mem);
+SAJS_API SajsWriter* SAJS_ALLOCATED
+sajs_writer_init(size_t mem_size, void* SAJS_NONNULL mem);
 
 /**
    A prefix of some text output.
@@ -246,11 +255,11 @@ typedef enum {
    whitespace for indentation, which can be arbitrarily long).
 */
 typedef struct {
-  SajsStatus     status; ///< Status of write operation
-  unsigned       indent; ///< Indent level (nested container count)
-  size_t         length; ///< Length of bytes
-  char const*    bytes;  ///< UTF-8 bytes
-  SajsTextPrefix prefix; ///< Text prefix (before bytes)
+  SajsStatus               status; ///< Status of write operation
+  unsigned                 indent; ///< Indent level (nested container count)
+  size_t                   length; ///< Length of bytes
+  char const* SAJS_NONNULL bytes;  ///< UTF-8 bytes
+  SajsTextPrefix           prefix; ///< Text prefix (before bytes)
 } SajsTextOutput;
 
 /**
@@ -262,7 +271,9 @@ typedef struct {
    optional whitespace), then write the `length` UTF-8 `bytes.
 */
 SAJS_API SajsTextOutput
-sajs_write_result(SajsWriter* writer, SajsResult r, SajsStringView string);
+sajs_write_result(SajsWriter* SAJS_NONNULL writer,
+                  SajsResult               r,
+                  SajsStringView           string);
 
 /**
    @}

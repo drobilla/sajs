@@ -43,6 +43,10 @@ if cc.get_id() in ['clang', 'emscripten']
   endif
 
   if warning_level in ['everything', '3']
+    c_suppressions += [
+      '-Wno-nullability-extension',
+    ]
+
     if host_machine.system() in ['dragonfly', 'freebsd', 'netbsd', 'openbsd']
       c_suppressions += [
         '-Wno-c11-extensions',
