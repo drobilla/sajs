@@ -49,6 +49,12 @@ if cc.get_id() in ['clang', 'emscripten']
     endif
   endif
 
+  if not meson.is_cross_build()
+    c_suppressions += [
+      '-Wno-poison-system-directories',
+    ]
+  endif
+
 elif cc.get_id() == 'gcc'
   if warning_level == 'everything'
     c_suppressions += [
@@ -95,7 +101,8 @@ else
 endif
 
 # Disable linking against the standard library if possible
-if cc.get_id() in ['clang', 'emscripten', 'gcc']
+if (host_machine.system() != 'darwin' and
+    cc.get_id() in ['clang', 'emscripten', 'gcc'])
   if (
     get_option('stdlib').disabled()
     or (
