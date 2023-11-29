@@ -7,7 +7,7 @@
 
 test_c_args = c_suppressions
 if cc.get_id() == 'msvc'
-  test_c_args = [
+  test_c_args += [
     '/D_CRT_SECURE_NO_WARNINGS',
     '/wd5045', # will insert Spectre mitigation for memory load
   ]
