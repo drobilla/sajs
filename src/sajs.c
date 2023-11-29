@@ -136,7 +136,7 @@ utf8_num_bytes_for_codepoint(uint32_t const code)
 }
 
 static uint8_t
-utf8_from_codepoint(uint8_t out[const 4], uint32_t const code)
+utf8_from_codepoint(uint8_t out[4], uint32_t const code)
 {
   static uint32_t const masks[4] = {0x0U, 0xC0U, 0x800U, 0x10000U};
 
@@ -687,7 +687,7 @@ sajs_process_byte(SajsLexer* const lexer, int const c)
 
   typedef SajsResult (*const SajsEatFunc)(SajsLexer*, SajsFrame*, uint8_t c);
 
-  static SajsEatFunc const handlers[SAJS_NUM_STATES] = {
+  static SajsEatFunc handlers[SAJS_NUM_STATES] = {
     eat_value,
     eat_elem_first,
     eat_elem_sep,

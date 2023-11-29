@@ -5,10 +5,18 @@
 # Test program #
 ################
 
+test_c_args = c_suppressions
+if cc.get_id() == 'msvc'
+  test_c_args = [
+    '/D_CRT_SECURE_NO_WARNINGS',
+    '/wd5045', # will insert Spectre mitigation for memory load
+  ]
+endif
+
 test_sajs = executable(
   'test_sajs',
   files('test_sajs.c'),
-  c_args: c_suppressions + program_c_args,
+  c_args: test_c_args + program_c_args,
   link_args: program_link_args,
   dependencies: [sajs_dep],
 )
