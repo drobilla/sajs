@@ -5,11 +5,10 @@
 #define SAJS_SAJS_H
 
 #include <stddef.h>
-#include <stdint.h>
 
 /**
    @defgroup sajs Sajs
-   A lightweight streaming SAX-like JSON parser.
+   A minimal streaming JSON reader and writer.
    @{
 */
 
@@ -34,6 +33,7 @@ typedef enum {
   SAJS_NO_DATA,                ///< Unexpected end of input
   SAJS_OVERFLOW,               ///< Stack overflow
   SAJS_UNDERFLOW,              ///< Stack underflow
+  SAJS_BAD_WRITE,              ///< Failed write
   SAJS_EXPECTED_COLON,         ///< Expected ':'
   SAJS_EXPECTED_COMMA,         ///< Expected ','
   SAJS_EXPECTED_CONTINUATION,  ///< Expected UTF-8 continuation byte
@@ -50,6 +50,8 @@ typedef enum {
   SAJS_EXPECTED_UTF8,          ///< Expected valid UTF-8 bytes
   SAJS_EXPECTED_VALUE,         ///< Expected value
 } SajsStatus;
+
+#define SAJS_NUM_STATUS 22U ///< The number of SajsStatus entries
 
 /**
    Kind of JSON value.
@@ -83,7 +85,7 @@ typedef enum {
   /**
      Ignored input.
 
-     Many characters, like whitespace, produce no output when parsed.
+     Many characters, like whitespace, produce no output when read.
   */
   SAJS_EVENT_NOTHING,
 
@@ -121,11 +123,11 @@ typedef enum {
 } SajsEvent;
 
 /**
-   Result of parsing some input.
+   Result of reading some input.
 
-   This is the result returned by parsing, which describes both the status of
-   the operation, and the output produced, if any.  If the `event` field isn't
-   #SAJS_EVENT_NOTHING, then the trailing fields describe the event.
+   This describes both the status of the read operation, and the output
+   produced, if any.  If the `event` field isn't #SAJS_EVENT_NOTHING, then the
+   trailing fields describe the event.
 */
 typedef struct {
   SajsStatus    status : 8; ///< Status of operation
@@ -135,9 +137,9 @@ typedef struct {
 } SajsResult;
 
 /**
-   JSON parser state.
+   JSON reader state.
 
-   This small amount of opaque parser state is followed by the parsing stack.
+   This is a few words of lexer state which is followed by a stack.
 */
 typedef struct SajsLexerImpl SajsLexer;
 
@@ -151,34 +153,107 @@ SAJS_API char const*
 sajs_strerror(SajsStatus st);
 
 /**
-   Set up a JSON parser in provided memory.
+   Set up a JSON lexer in provided memory.
 
    The initial few bytes of the memory will be used for lexer state, and
    following memory will be used as a stack.  One byte of stack is needed for
    each level of value nesting in the input.
+
+   The memory must be word-aligned and at least 48 bytes.  NULL is returned if
+   not enough space is available.
 */
 SAJS_API SajsLexer*
-sajs_init(size_t mem_size, void* mem);
+sajs_lexer_init(size_t mem_size, void* mem);
 
 /**
-   Parse one byte and return any result.
+   Read one byte and return any result.
 
    Accepts a single character as an int, with -1 representing EOF, as with
    `fgetc`.  The returned struct includes the `status`, and possibly an `event`
-   if parsing the character produced output.
+   if reading the character produced output.
 */
 SAJS_API SajsResult
 sajs_read_byte(SajsLexer* lexer, int c);
 
 /**
-   Return a pointer to the bytes for the last parsed character.
+   A view of an immutable string slice with a length.
+*/
+typedef struct {
+  char const* data;   ///< Pointer to the first character
+  size_t      length; ///< Length of string in bytes
+} SajsStringView;
+
+/**
+   Return a view of the bytes for the last read character.
 
    If the last event returned from #sajs_read_byte indicates that bytes are
-   available, this function will return a pointer to them until the state is
-   changed by reading another character or reset.
+   available, this function will return them until the state is
+   changed by reading another character, or is reset.
 */
-SAJS_API uint8_t const*
-sajs_bytes(SajsLexer const* lexer);
+SAJS_API SajsStringView
+sajs_string(SajsLexer const* lexer);
+
+/**
+   JSON writer state.
+
+   This is a few words of writer state.
+*/
+typedef struct SajsWriterImpl SajsWriter;
+
+/**
+   Set up a JSON writer in provided memory.
+
+   The writer uses a small fixed amount of memory.  The memory must be
+   word-aligned and at least 32 bytes.  NULL is returned if not enough space is
+   available.
+*/
+SAJS_API SajsWriter*
+sajs_writer_init(size_t mem_size, void* mem);
+
+/**
+   A prefix of some text output.
+*/
+typedef enum {
+  SAJS_PREFIX_NONE,
+  SAJS_PREFIX_OBJECT_START, ///< Space before first object element
+  SAJS_PREFIX_ARRAY_START,  ///< Space before first array element
+  SAJS_PREFIX_OBJECT_END,   ///< Space before object end brace
+  SAJS_PREFIX_ARRAY_END,    ///< Space before array end bracket
+  SAJS_PREFIX_MEMBER_COLON, ///< Colon before member value
+  SAJS_PREFIX_MEMBER_COMMA, ///< Comma before following member name
+  SAJS_PREFIX_ARRAY_COMMA,  ///< Comma before following array element
+} SajsTextPrefix;
+
+/**
+   Text output produced by writing a result.
+
+   This describes both the status of the write operation, and the fragment of
+   text emitted, if any.  To allow streaming arbitrary data in constant memory,
+   an output has two optional prefixes: a leading comma, and a newline after
+   that.  This prefix is followed by a string of UTF-8 bytes.
+
+   This way, the indentation level is handled by the caller, and there's no
+   need for a contiguous string that doesn't exist in a token (including
+   whitespace for indentation, which can be arbitrarily long).
+*/
+typedef struct {
+  SajsStatus     status; ///< Status of write operation
+  unsigned       indent; ///< Indent level (nested container count)
+  size_t         length; ///< Length of bytes
+  char const*    bytes;  ///< UTF-8 bytes
+  SajsTextPrefix prefix; ///< Text prefix (before bytes)
+} SajsTextOutput;
+
+/**
+   Write a lexed result as a JSON text fragment.
+
+   If the returned output has `status` #SAJS_SUCCESS, then it represents some
+   bytes of text output.  To write this as a flat stream of bytes, the caller
+   must write the prefix (which may have a pre-defined delimiter, followed by
+   optional whitespace), then write the `length` UTF-8 `bytes.
+*/
+SAJS_API SajsTextOutput
+sajs_write_result(SajsWriter* writer, SajsResult r, SajsStringView string);
 
 /**
    @}

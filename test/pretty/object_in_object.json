@@ -1,0 +1,12 @@
+{
+  "object": {
+    "no": false,
+    "nothing": null,
+    "yes": true,
+    "zero": 0,
+    "integer": 12,
+    "decimal": 3.4,
+    "double": 5.6e7,
+    "string": "value"
+  }
+}

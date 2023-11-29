@@ -1,0 +1,13 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: sajs
+Upstream-Contact: David Robillard <d@drobilla.net>
+Source: https://gitlab.com/drobilla/sajs
+
+Files: README.md
+Copyright: 2023 David Robillard <d@drobilla.net>
+License: ISC
+
+Files: test/pretty/*.json
+Copyright: 2023 David Robillard <d@drobilla.net>
+Comment: Contributed to the Commons as a representation of simple data
+License: 0BSD OR ISC

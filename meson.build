@@ -31,6 +31,7 @@ if cc.get_id() in ['clang', 'emscripten']
   if warning_level == 'everything'
     c_suppressions += [
       '-Wno-declaration-after-statement',
+      '-Wno-padded',
       '-Wno-unsafe-buffer-usage',
     ]
 
@@ -58,7 +59,9 @@ if cc.get_id() in ['clang', 'emscripten']
 elif cc.get_id() == 'gcc'
   if warning_level == 'everything'
     c_suppressions += [
+      '-Wno-padded',
       '-Wno-suggest-attribute=const',
+      '-Wno-suggest-attribute=pure',
       '-Wno-switch-default',
     ]
   endif
@@ -101,8 +104,10 @@ else
 endif
 
 # Disable linking against the standard library if possible
-if (host_machine.system() != 'darwin' and
-    cc.get_id() in ['clang', 'emscripten', 'gcc'])
+if (
+  host_machine.system() not in ['darwin', 'windows']
+  and cc.get_id() in ['clang', 'emscripten', 'gcc']
+)
   if (
     get_option('stdlib').disabled()
     or (
@@ -134,7 +139,7 @@ endif
 
 include_dirs = include_directories(['include'])
 c_headers = files('include/sajs/sajs.h')
-c_sources = files('src/sajs.c')
+c_sources = files('src/lexer.c', 'src/status.c', 'src/writer.c')
 
 # Set appropriate arguments for building against the library type
 extra_c_args = []

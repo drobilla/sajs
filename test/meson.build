@@ -40,7 +40,7 @@ test(
 )
 
 #############################
-# Data-Driven Parsing Tests #
+# Data-Driven Reading Tests #
 #############################
 
 test_parse = find_program('test_parse.py')
@@ -389,7 +389,7 @@ foreach name : perfect_tests
   test(
     name + '_thru',
     test_thru,
-    args: test_script_args + [input],
+    args: test_script_args + ['--terse', input],
     suite: 'thru',
     timeout: 5,
   )
@@ -417,3 +417,35 @@ foreach name : bad_tests
     timeout: 5,
   )
 endforeach
+
+#############################
+# Data-Driven Writing Tests #
+#############################
+
+pretty_tests = [
+  'array_in_array',
+  'array_in_object',
+  'empty_array',
+  'empty_array_in_array',
+  'empty_array_in_object',
+  'empty_object',
+  'empty_object_in_array',
+  'empty_object_in_object',
+  'object_in_object',
+  'object_in_array',
+  'simple_array',
+  'simple_object',
+]
+
+foreach name : pretty_tests
+  input = files('pretty' / name + '.json')
+
+  test(
+    name,
+    test_thru,
+    args: test_script_args + [input],
+    suite: 'pretty',
+    timeout: 5,
+  )
+endforeach
+

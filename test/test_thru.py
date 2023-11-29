@@ -22,11 +22,14 @@ def main():
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tool", default="test/test_sajs", help="executable")
+    parser.add_argument("--terse", action="store_true", help="terse output")
     parser.add_argument("input", help="valid JSON input file")
     args = parser.parse_args(sys.argv[1:])
 
     wrapper = shlex.split(os.environ.get("MESON_EXE_WRAPPER", ""))
     command = wrapper + [args.tool]
+    if args.terse:
+        command += ["-t"]
 
     status = 0
     with tempfile.TemporaryFile("w+", encoding="utf-8") as out_file:

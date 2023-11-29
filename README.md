@@ -1,14 +1,11 @@
-<!-- Copyright 2021-2023 David Robillard <d@drobilla.net> -->
-<!-- SPDX-License-Identifier: ISC -->
-
 Sajs
 ====
 
-Sajs (Simple Api for JSon) is a streaming SAX-style JSON parser implemented in
-C99.
+Sajs (Simple Api for JSon) is a minimal streaming JSON reader and writer,
+implemented as a zero-dependency C99 library with a command-line wrapper.
 
-Sajs provides an interface for reading a single byte at a time, which fires
-callbacks on events that describe the input, like the start and end of a value.
-It has no dependencies, not even the standard library.
+Sajs is designed for minimal code size and flexibility of deployment.  The
+library has no dependencies (not even the standard library), and requires only
+a single contiguous chunk of memory which can be allocated statically.
 
  -- David Robillard <d@drobilla.net>
