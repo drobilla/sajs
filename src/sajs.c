@@ -726,7 +726,7 @@ sajs_read_byte(SajsLexer* const lexer, int const c)
     SajsResult s = sajs_process_byte(lexer, c);
     r.status     = s.status;
     if (r.event == SAJS_EVENT_END && s.event == SAJS_EVENT_END) {
-      r.type  = s.type;
+      r.kind  = s.kind;
       r.event = SAJS_EVENT_DOUBLE_END;
     }
   }

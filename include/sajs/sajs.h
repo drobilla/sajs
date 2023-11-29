@@ -105,8 +105,8 @@ typedef enum {
      The end of both a value and its container.
 
      This happens when a single character, '}' or ']', ends both the current
-     number/literal and the object/array it's in.  The `type` will be set to
-     the type of the container (the type of the number/literal is implicit).
+     number/literal and the object/array it's in.  The `kind` will be set to
+     the kind of the container (the kind of the number/literal is implicit).
   */
   SAJS_EVENT_DOUBLE_END,
 
@@ -130,7 +130,7 @@ typedef enum {
 typedef struct {
   SajsStatus    status : 8; ///< Status of operation
   SajsEvent     event : 8;  ///< Event produced
-  SajsValueKind type : 8;   ///< Start/end event value type
+  SajsValueKind kind : 8;   ///< Start/end event value kind
   SajsFlags     flags : 8;  ///< Start event value flags
 } SajsResult;
 

@@ -40,7 +40,7 @@ stream_write_escape(uint8_t const letter, FILE* const stream)
 // Called when a value is started
 static SajsStatus
 on_start(TestState* const    state,
-         SajsValueKind const type,
+         SajsValueKind const kind,
          SajsFlags const     flags)
 {
   SajsStatus  st     = SAJS_SUCCESS;
@@ -50,7 +50,7 @@ on_start(TestState* const    state,
     st = stream_write(',', stream);
   }
 
-  switch (type) {
+  switch (kind) {
   case SAJS_OBJECT:
     st = stream_write('{', stream);
     break;
@@ -66,7 +66,7 @@ on_start(TestState* const    state,
   }
 
   ++state->depth;
-  state->top_kind  = type;
+  state->top_kind  = kind;
   state->top_flags = flags;
   return st;
 }
@@ -113,12 +113,12 @@ on_byte(TestState* const state, uint8_t const byte)
 
 // Called when a value is finished
 static SajsStatus
-on_end(TestState* const state, SajsValueKind const type)
+on_end(TestState* const state, SajsValueKind const kind)
 {
   SajsStatus  st     = SAJS_SUCCESS;
   FILE* const stream = state->out_stream;
 
-  switch (type) {
+  switch (kind) {
   case SAJS_OBJECT:
     st = stream_write('}', stream);
     break;
@@ -154,7 +154,7 @@ on_result(TestState* const state, SajsResult const r)
   case SAJS_EVENT_NOTHING:
     break;
   case SAJS_EVENT_START:
-    on_start(state, r.type, r.flags);
+    on_start(state, r.kind, r.flags);
     if (r.flags & SAJS_HAS_BYTES) {
       on_byte(state, bytes[0]);
     }
@@ -163,11 +163,11 @@ on_result(TestState* const state, SajsResult const r)
     if (r.flags & SAJS_HAS_BYTES) {
       on_byte(state, bytes[0]);
     }
-    on_end(state, r.type);
+    on_end(state, r.kind);
     break;
   case SAJS_EVENT_DOUBLE_END:
     on_end(state, state->top_kind);
-    on_end(state, r.type);
+    on_end(state, r.kind);
     break;
   case SAJS_EVENT_BYTES:
     on_byte(state, bytes[0]);
