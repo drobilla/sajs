@@ -60,8 +60,6 @@ elif cc.get_id() == 'gcc'
   if warning_level == 'everything'
     c_suppressions += [
       '-Wno-padded',
-      '-Wno-suggest-attribute=const',
-      '-Wno-suggest-attribute=pure',
       '-Wno-switch-default',
     ]
   endif

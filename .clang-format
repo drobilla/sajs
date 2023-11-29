@@ -18,4 +18,6 @@ QualifierAlignment: Right
 SpacesInContainerLiterals: false
 AttributeMacros:
   - SAJS_API
+  - SAJS_CONST_FUNC
+  - SAJS_PURE_FUNC
 ...

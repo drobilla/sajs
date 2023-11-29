@@ -25,6 +25,15 @@
 #  endif
 #endif
 
+// GCC function attributes
+#ifdef __GNUC__
+#  define SAJS_PURE_FUNC __attribute__((pure))
+#  define SAJS_CONST_FUNC __attribute__((const))
+#else
+#  define SAJS_PURE_FUNC  ///< Only reads memory
+#  define SAJS_CONST_FUNC ///< Only reads its parameters
+#endif
+
 /** Status code. */
 typedef enum {
   SAJS_SUCCESS,                ///< Success
@@ -149,7 +158,7 @@ typedef struct SajsLexerImpl SajsLexer;
    Returns a non-null pointer to a static constant string, in English,
    capitalized without a trailing period.
 */
-SAJS_API char const*
+SAJS_API SAJS_CONST_FUNC char const*
 sajs_strerror(SajsStatus st);
 
 /**
@@ -190,7 +199,7 @@ typedef struct {
    available, this function will return them until the state is
    changed by reading another character, or is reset.
 */
-SAJS_API SajsStringView
+SAJS_API SAJS_PURE_FUNC SajsStringView
 sajs_string(SajsLexer const* lexer);
 
 /**
