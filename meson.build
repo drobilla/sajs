@@ -74,6 +74,7 @@ elif cc.get_id() == 'msvc'
     c_suppressions += [
       '/wd4710', # function not inlined
       '/wd4711', # function selected for automatic inline expansion
+      '/wd4820', # padding added after construct
       '/wd5045', # will insert Spectre mitigation
     ]
   endif
