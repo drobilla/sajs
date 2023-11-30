@@ -1,6 +1,60 @@
 # Copyright 2021-2023 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
+############
+# Metadata #
+############
+
+if get_option('lint')
+  python_script_names = ['test_parse.py', 'test_thru.py']
+  python_scripts = files(python_script_names)
+
+  # Check licensing metadata
+  reuse = find_program('reuse', required: false)
+  if reuse.found()
+    test(
+      'REUSE',
+      reuse,
+      args: ['--root', sajs_src_root, 'lint'],
+      suite: 'data',
+    )
+  endif
+
+  # Check script formatting
+  black = find_program('black', required: false)
+  if black.found()
+    black_opts = ['--check', '-q', '-l', '79']
+    foreach name : python_script_names
+      test(
+        name.underscorify(),
+        black,
+        args: black_opts + files(name),
+        suite: 'scripts',
+      )
+    endforeach
+  endif
+
+  # Check scripts for errors with flake8
+  flake8 = find_program('flake8', required: false)
+  if flake8.found()
+    test('flake8', flake8, args: python_scripts, suite: 'scripts')
+  endif
+
+  # Check scripts for errors with pylint
+  pylint = find_program('pylint', required: false)
+  if pylint.found()
+    pymod = import('python')
+    plot_py = pymod.find_installation(
+      'python3',
+      modules: ['matplotlib'],
+      required: false,
+    )
+
+    pylint_args = ['--disable', 'bad-option-value']
+    test('pylint', pylint, args: pylint_args + python_scripts, suite: 'scripts')
+  endif
+endif
+
 ##############
 # Unit Tests #
 ##############

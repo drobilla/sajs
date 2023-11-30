@@ -14,6 +14,7 @@ project(
   version: '0.0.1',
 )
 
+sajs_src_root = meson.current_source_dir()
 versioned_name = 'sajs-@0@'.format(meson.project_version().split('.')[0])
 
 #######################
