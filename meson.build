@@ -172,7 +172,7 @@ sajs_dep = declare_dependency(
 # Generage pkg-config file for external dependants
 pkg.generate(
   libsajs,
-  description: 'Low-level streaming JSON parser',
+  description: 'Low-level streaming JSON reader and writer',
   extra_cflags: extra_c_args,
   filebase: versioned_name,
   name: 'Sajs',
@@ -185,6 +185,16 @@ meson.override_dependency(versioned_name, sajs_dep)
 
 # Install header to a versioned include directory
 install_headers(c_headers, subdir: versioned_name / 'sajs')
+
+#########
+# Tools #
+#########
+
+if not get_option('tools').disabled()
+  subdir('tools')
+else
+  sajs_pipe = disabler()
+endif
 
 #########
 # Tests #

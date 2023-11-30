@@ -1,0 +1,74 @@
+.\" Copyright 2011-2023 David Robillard <d@drobilla.net>
+.\" SPDX-License-Identifier: ISC
+.Dd November 29, 2023
+.Dt SAJS-PIPE 1
+.Os Sajs 0.0.1
+.Sh NAME
+.Nm sajs-pipe
+.Nd read and write JSON data
+.Sh SYNOPSIS
+.Nm sajs-pipe
+.Op Fl ht
+.Op Fl o Ar filename
+.Op Ar input
+.Sh DESCRIPTION
+.Nm
+is a lightweight utility for streaming JSON data.
+It reads one or more files and writes the data again,
+possibly in a different form.
+If the input syntax is invalid,
+an error will be printed before exiting with a non-zero status.
+.Pp
+If
+.Ar input
+is absent,
+.Nm
+reads from standard input.
+Similarly, output defaults to standard output.
+.Pp
+The options are as follows:
+.Bl -tag -width 3n
+.It Fl h
+Print the command line options.
+.It Fl k Ar bytes
+Lexer stack size.
+Lexing is performed using a pre-allocated stack for performance and security reasons.
+The stack is 1 KiB by default,
+which should be sufficient for most data,
+but can be increased to support very deep nesting.
+.It Fl o Ar filename
+Write output to the given
+.Ar filename
+instead of stdout.
+.It Fl t
+Write terse output without newlines.
+Normally, extra space is written between delimiters,
+writing one value per line.
+Terse mode suppresses this,
+so values will be written as a single line with no extra spaces.
+.El
+.Sh EXIT STATUS
+.Nm
+exits with a status of 0, or non-zero if an error occurred.
+.Sh EXAMPLES
+.Bl -tag -width 3n
+.It Pretty-print a JSON file:
+.Nm Pa input.json
+.It Minimize a JSON file:
+.Nm Fl t
+.Ar input.json
+.It Write a pretty-printed version of a JSON file:
+.Nm Fl o
+.Ar pretty.json
+.Pa input.json
+.It Write a minimized version of a JSON file:
+.Nm Fl t
+.Fl o
+.Ar minimal.json
+.Pa input.json
+.El
+.Sh AUTHORS
+.Nm
+is a part of sajs, by
+.An David Robillard
+.Mt d@drobilla.net .

@@ -1,42 +1,67 @@
 # Copyright 2021-2023 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
-################
-# Test program #
-################
+##############
+# Unit Tests #
+##############
 
-test_c_args = c_suppressions
-if cc.get_id() == 'msvc'
-  test_c_args += [
-    '/D_CRT_SECURE_NO_WARNINGS',
-    '/wd5045', # will insert Spectre mitigation for memory load
-  ]
-endif
-
-test_sajs = executable(
-  'test_sajs',
-  files('test_sajs.c'),
-  c_args: test_c_args + program_c_args,
+test_init = executable(
+  'test_init',
+  files('test_init.c'),
+  c_args: c_suppressions + program_c_args,
   link_args: program_link_args,
   dependencies: [sajs_dep],
 )
 
+test('init', test_init, suite: 'unit')
+
+#################
+# Utility Tests #
+#################
+
+test('version', sajs_pipe, args: ['-V'], suite: 'args', timeout: 5)
+test('help', sajs_pipe, args: ['-h'], suite: 'args', timeout: 5)
+
+if host_machine.cpu_family() not in ['wasm32', 'wasm64']
+  test_file = files('../test/pretty/empty_array.json')
+  test('tiny_k', sajs_pipe, args: ['-k', '2', test_file], suite: 'args')
+endif
+
+test('bad_arg', sajs_pipe, args: ['-b'], should_fail: true, suite: 'args')
+test('bad_k', sajs_pipe, args: ['-k', 'b'], should_fail: true, suite: 'args')
+test('missing_k', sajs_pipe, args: ['-k'], should_fail: true, suite: 'args')
+test('zero_k', sajs_pipe, args: ['-k', '0'], should_fail: true, suite: 'args')
+
 test(
-  'unknown',
-  test_sajs,
-  args: ['--unknown', '--args'],
+  'huge_k',
+  sajs_pipe,
+  args: ['-k', '9223372036854775806'],
   should_fail: true,
   suite: 'args',
-  timeout: 5,
 )
 
 test(
-  'missing',
-  test_sajs,
+  'missing_o',
+  sajs_pipe,
+  args: ['-o'],
+  should_fail: true,
+  suite: 'args',
+)
+
+test(
+  'missing_input',
+  sajs_pipe,
   args: ['/does/not/exist'],
   should_fail: true,
   suite: 'args',
-  timeout: 5,
+)
+
+test(
+  'missing_output',
+  sajs_pipe,
+  args: ['-o', '/does/not/exist'],
+  should_fail: true,
+  suite: 'args',
 )
 
 #############################
@@ -373,7 +398,7 @@ bad_tests = [
   'n_structure_whitespace_formfeed',
 ]
 
-test_script_args = ['--tool', test_sajs]
+test_script_args = ['--tool', sajs_pipe]
 
 foreach name : perfect_tests
   input = files('JSONTestSuite' / 'test_parsing' / name + '.json')
@@ -448,4 +473,3 @@ foreach name : pretty_tests
     timeout: 5,
   )
 endforeach
-

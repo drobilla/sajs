@@ -1,6 +1,8 @@
 # Copyright 2021-2023 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
+option('man', type: 'feature', yield: true, description: 'Install man pages')
 option('stdlib', type: 'feature', description: 'Link to standard library')
 option('tests', type: 'feature', yield: true, description: 'Build tests')
 option('title', type: 'string', value: 'Sajs', description: 'Project title')
+option('tools', type: 'feature', description: 'Build command line utilities')

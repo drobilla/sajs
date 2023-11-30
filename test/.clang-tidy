@@ -2,8 +2,5 @@
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
-  -android-cloexec-fopen,
-  -concurrency-mt-unsafe,
-  -hicpp-multiway-paths-covered,
-  -llvmlibc-*,
+  -llvmlibc-restrict-system-libc-headers,
 InheritParentConfig: true
