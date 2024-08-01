@@ -69,11 +69,11 @@ emit_pair(SajsWriter* const writer, SajsByte const a, SajsByte const b)
 // Called when a value is started
 static SajsTextOutput
 on_start(SajsWriter* const   writer,
-         SajsValueKind const type,
+         SajsValueKind const kind,
          SajsFlags const     flags,
          SajsByte const      head)
 {
-  writer->top_kind  = type;
+  writer->top_kind  = kind;
   writer->top_flags = flags;
 
   bool const           is_first = flags & SAJS_IS_FIRST;
@@ -85,7 +85,7 @@ on_start(SajsWriter* const   writer,
       ? (is_first ? SAJS_PREFIX_ARRAY_START : SAJS_PREFIX_ARRAY_COMMA)
       : SAJS_PREFIX_NONE;
 
-  switch (type) {
+  switch (kind) {
   case SAJS_OBJECT:
     return emit_sep(writer, prefix, writer->depth++, '{');
   case SAJS_ARRAY:
@@ -145,11 +145,11 @@ on_byte(SajsWriter* const writer, SajsByte const byte)
 
 // Called when a value is finished
 static SajsTextOutput
-on_end(SajsWriter* const writer, SajsValueKind const type, SajsByte const tail)
+on_end(SajsWriter* const writer, SajsValueKind const kind, SajsByte const tail)
 {
   writer->top_flags = 0U;
 
-  switch (type) {
+  switch (kind) {
   case SAJS_OBJECT:
     return emit_sep(writer, SAJS_PREFIX_OBJECT_END, --writer->depth, '}');
   case SAJS_ARRAY:
