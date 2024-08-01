@@ -29,9 +29,11 @@
 #ifdef __GNUC__
 #  define SAJS_PURE_FUNC __attribute__((pure))
 #  define SAJS_CONST_FUNC __attribute__((const))
+#  define SAJS_MALLOC_FUNC __attribute__((malloc))
 #else
 #  define SAJS_PURE_FUNC  ///< Only reads memory
 #  define SAJS_CONST_FUNC ///< Only reads its parameters
+#  define SAJS_MALLOC_FUNC ///< Returns a non-aliasing pointer
 #endif
 
 // Clang nullability attributes
@@ -177,7 +179,7 @@ sajs_strerror(SajsStatus status);
    The memory must be word-aligned and at least 48 bytes.  NULL is returned if
    not enough space is available.
 */
-SAJS_API SajsLexer* SAJS_ALLOCATED
+SAJS_API SAJS_MALLOC_FUNC SajsLexer* SAJS_ALLOCATED
 sajs_lexer_init(size_t mem_size, void* SAJS_NONNULL mem);
 
 /**
@@ -220,7 +222,7 @@ typedef struct SajsWriterImpl SajsWriter;
    word-aligned and at least 32 bytes.  NULL is returned if not enough space is
    available.
 */
-SAJS_API SajsWriter* SAJS_ALLOCATED
+SAJS_API SAJS_MALLOC_FUNC SajsWriter* SAJS_ALLOCATED
 sajs_writer_init(size_t mem_size, void* SAJS_NONNULL mem);
 
 /// A prefix of some text output

@@ -19,6 +19,7 @@ SpacesInContainerLiterals: false
 AttributeMacros:
   - SAJS_API
   - SAJS_CONST_FUNC
+  - SAJS_MALLOC_FUNC
   - SAJS_NONNULL
   - SAJS_PURE_FUNC
 ...
