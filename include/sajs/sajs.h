@@ -1,4 +1,4 @@
-// Copyright 2017-2023 David Robillard <d@drobilla.net>
+// Copyright 2017-2024 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #ifndef SAJS_SAJS_H
@@ -247,8 +247,8 @@ typedef enum {
 
    This describes both the status of the write operation, and the fragment of
    text emitted, if any.  To allow streaming arbitrary data in constant memory,
-   an output has two optional prefixes: a leading comma, and a newline after
-   that.  This prefix is followed by a string of UTF-8 bytes.
+   an output has one of a set of static prefixes (JSON punctuation plus any
+   whitespace), followed by a string of UTF-8 bytes.
 
    This way, the indentation level is handled by the caller, and there's no
    need for a contiguous string that doesn't exist in a token (including
