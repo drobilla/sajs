@@ -158,27 +158,27 @@ sajs_lexer_init(size_t const mem_size, void* const mem)
 }
 
 /*
- * Results
+ * Events
  */
 
 /* Simple Data */
 
-static SajsResult
+static SajsEvent
 bytes_event(void)
 {
-  SajsResult const r = {
+  SajsEvent const e = {
     SAJS_SUCCESS, SAJS_EVENT_BYTES, (SajsValueKind)0U, SAJS_HAS_BYTES};
-  return r;
+  return e;
 }
 
-static SajsResult
+static SajsEvent
 do_nothing(SajsStatus const st)
 {
-  SajsResult const r = {st, SAJS_EVENT_NOTHING, (SajsValueKind)0U, 0U};
-  return r;
+  SajsEvent const e = {st, SAJS_EVENT_NOTHING, (SajsValueKind)0U, 0U};
+  return e;
 }
 
-static SajsResult
+static SajsEvent
 do_byte(SajsLexer* const lexer, uint8_t const c)
 {
   lexer->bytes[0]  = c;
@@ -187,7 +187,7 @@ do_byte(SajsLexer* const lexer, uint8_t const c)
   return bytes_event();
 }
 
-static SajsResult
+static SajsEvent
 do_codepoint(SajsLexer* const lexer, uint32_t const codepoint)
 {
   lexer->num_bytes = utf8_from_codepoint(lexer->bytes, codepoint);
@@ -197,7 +197,7 @@ do_codepoint(SajsLexer* const lexer, uint32_t const codepoint)
 
 /* Stack Changes */
 
-static SajsResult
+static SajsEvent
 push(SajsLexer* const    lexer,
      SajsValueKind const kind,
      SajsFlags const     flags,
@@ -218,12 +218,12 @@ push(SajsLexer* const    lexer,
   lexer->bytes[0]  = first;
   lexer->bytes[1]  = 0U;
 
-  const SajsFlags  rflags = flags | (first ? SAJS_HAS_BYTES : 0U);
-  SajsResult const r = {SAJS_SUCCESS, SAJS_EVENT_START, kind, (uint8_t)rflags};
-  return r;
+  SajsFlags const rflags = flags | (first ? SAJS_HAS_BYTES : 0U);
+  SajsEvent const e = {SAJS_SUCCESS, SAJS_EVENT_START, kind, (uint8_t)rflags};
+  return e;
 }
 
-static SajsResult
+static SajsEvent
 pop(SajsLexer* const    lexer,
     SajsValueKind const kind,
     SajsStatus const    success_status,
@@ -233,23 +233,23 @@ pop(SajsLexer* const    lexer,
   lexer->bytes[1] = 0U;
 
   uint8_t const flags = last ? (uint8_t)SAJS_HAS_BYTES : 0U;
-  SajsResult    r     = {SAJS_UNDERFLOW, SAJS_EVENT_END, kind, flags};
+  SajsEvent     e     = {SAJS_UNDERFLOW, SAJS_EVENT_END, kind, flags};
 
   if (lexer->top) {
     --lexer->top;
-    r.status = success_status;
+    e.status = success_status;
   }
 
   lexer->length    = 0U;
   lexer->num_bytes = 0U;
   lexer->flags     = 0U;
-  return r;
+  return e;
 }
 
 /* State Transitions */
 
 /// Reset the top frame and flags, return success
-static SajsResult
+static SajsEvent
 do_reset(SajsLexer* const lexer,
          SajsFrame* const frame,
          SajsState const  state,
@@ -261,23 +261,23 @@ do_reset(SajsLexer* const lexer,
 }
 
 /// Reset the top frame and flags, if a result was successful
-static SajsResult
+static SajsEvent
 do_reset_if(SajsLexer* const lexer,
             SajsFrame* const frame,
             SajsState const  state,
             SajsFlags const  flags,
-            SajsResult const r)
+            SajsEvent const  e)
 {
-  if (!r.status) {
+  if (!e.status) {
     *frame       = (SajsFrame)state;
     lexer->flags = flags;
   }
 
-  return r;
+  return e;
 }
 
 /// Change the top frame to a new state, return success
-static SajsResult
+static SajsEvent
 do_change(SajsFrame* const frame, SajsState const state)
 {
   *frame = (SajsFrame)state;
@@ -285,18 +285,18 @@ do_change(SajsFrame* const frame, SajsState const state)
 }
 
 /// Change the top frame to a new state, if a result was successful
-static SajsResult
-do_change_if(SajsFrame* const frame, SajsState const state, SajsResult const r)
+static SajsEvent
+do_change_if(SajsFrame* const frame, SajsState const state, SajsEvent const e)
 {
-  if (!r.status) {
+  if (!e.status) {
     *frame = (SajsFrame)state;
   }
 
-  return r;
+  return e;
 }
 
 /// Change the top frame to a new state, and produce a byte
-static SajsResult
+static SajsEvent
 do_byte_change(SajsLexer* const lexer,
                SajsFrame* const frame,
                SajsState const  state,
@@ -312,7 +312,7 @@ do_byte_change(SajsLexer* const lexer,
 
 /* Values */
 
-static SajsResult
+static SajsEvent
 eat_value(SajsLexer* const lexer, SajsFlags const flags, uint8_t const c)
 {
   switch (c) {
@@ -340,7 +340,7 @@ eat_value(SajsLexer* const lexer, SajsFlags const flags, uint8_t const c)
                      : do_nothing(SAJS_EXPECTED_VALUE);
 }
 
-static SajsResult
+static SajsEvent
 eat_start(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   (void)frame;
@@ -349,7 +349,7 @@ eat_start(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 
 /* Arrays */
 
-static SajsResult
+static SajsEvent
 eat_elem_first(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return (c == ']')
@@ -361,7 +361,7 @@ eat_elem_first(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
                          eat_value(lexer, SAJS_IS_ELEMENT | SAJS_IS_FIRST, c));
 }
 
-static SajsResult
+static SajsEvent
 eat_elem_sep(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return (c == ']')   ? pop(lexer, SAJS_ARRAY, SAJS_SUCCESS, 0U)
@@ -369,7 +369,7 @@ eat_elem_sep(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
                       : do_nothing(SAJS_EXPECTED_COMMA);
 }
 
-static SajsResult
+static SajsEvent
 eat_elem_next(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return do_change_if(
@@ -378,7 +378,7 @@ eat_elem_next(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 
 /* Objects */
 
-static SajsResult
+static SajsEvent
 eat_mem_name_first(SajsLexer* const lexer,
                    SajsFrame* const frame,
                    uint8_t const    c)
@@ -394,7 +394,7 @@ eat_mem_name_first(SajsLexer* const lexer,
                                           0));
 }
 
-static SajsResult
+static SajsEvent
 eat_mem_name_sep(SajsLexer* const lexer,
                  SajsFrame* const frame,
                  uint8_t const    c)
@@ -404,7 +404,7 @@ eat_mem_name_sep(SajsLexer* const lexer,
            : do_nothing(SAJS_EXPECTED_COLON);
 }
 
-static SajsResult
+static SajsEvent
 eat_mem_value_start(SajsLexer* const lexer,
                     SajsFrame* const frame,
                     uint8_t const    c)
@@ -413,7 +413,7 @@ eat_mem_value_start(SajsLexer* const lexer,
     frame, STATE_MEM_SEP, eat_value(lexer, SAJS_IS_MEMBER_VALUE, c));
 }
 
-static SajsResult
+static SajsEvent
 eat_mem_sep(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return (c == ',')   ? do_reset(lexer, frame, STATE_MEM_NEXT, 0U)
@@ -421,7 +421,7 @@ eat_mem_sep(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
                       : do_nothing(SAJS_EXPECTED_COMMA);
 }
 
-static SajsResult
+static SajsEvent
 eat_mem_next(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return (c == '\"')
@@ -434,7 +434,7 @@ eat_mem_next(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 
 /* Strings */
 
-static SajsResult
+static SajsEvent
 eat_string(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return (c == '\"')   ? pop(lexer, SAJS_STRING, SAJS_SUCCESS, 0U)
@@ -443,7 +443,7 @@ eat_string(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
                        : do_byte(lexer, c);
 }
 
-static SajsResult
+static SajsEvent
 eat_string_esc(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   switch (c) {
@@ -470,7 +470,7 @@ eat_string_esc(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
   return do_nothing(SAJS_EXPECTED_STRING_ESCAPE);
 }
 
-static SajsResult
+static SajsEvent
 eat_string_esc_hex(SajsLexer* const lexer,
                    SajsFrame* const frame,
                    uint8_t const    c)
@@ -495,13 +495,13 @@ eat_string_esc_hex(SajsLexer* const lexer,
   }
 
   // Emit UTF-8 character and return to normal string state
-  SajsResult const r = do_codepoint(lexer, lexer->value);
-  lexer->length      = 0U;
-  *frame             = STATE_STRING;
-  return r;
+  SajsEvent const e = do_codepoint(lexer, lexer->value);
+  lexer->length     = 0U;
+  *frame            = STATE_STRING;
+  return e;
 }
 
-static SajsResult
+static SajsEvent
 eat_string_esc_lo(SajsLexer* const lexer,
                   SajsFrame* const frame,
                   uint8_t const    c)
@@ -530,10 +530,10 @@ eat_string_esc_lo(SajsLexer* const lexer,
   }
 
   // Emit UTF-8 character and return to normal string state
-  SajsResult const r = do_codepoint(lexer, codepoint);
-  lexer->length      = 0U;
-  *frame             = STATE_STRING;
-  return r;
+  SajsEvent const e = do_codepoint(lexer, codepoint);
+  lexer->length     = 0U;
+  *frame            = STATE_STRING;
+  return e;
 }
 
 /* Numbers */
@@ -544,7 +544,7 @@ is_number_end(uint8_t const c)
   return is_space(c) || c == ',' || c == ']' || c == '}';
 }
 
-static SajsResult
+static SajsEvent
 eat_num_int_start(SajsLexer* const lexer,
                   SajsFrame* const frame,
                   uint8_t const    c)
@@ -554,7 +554,7 @@ eat_num_int_start(SajsLexer* const lexer,
                        : do_nothing(SAJS_EXPECTED_DIGIT);
 }
 
-static SajsResult
+static SajsEvent
 eat_num_int_end(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return is_number_end(c) ? pop(lexer, SAJS_NUMBER, SAJS_RETRY, 0U)
@@ -564,7 +564,7 @@ eat_num_int_end(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
            : do_nothing(SAJS_EXPECTED_DECIMAL);
 }
 
-static SajsResult
+static SajsEvent
 eat_num_int_cont(SajsLexer* const lexer,
                  SajsFrame* const frame,
                  uint8_t const    c)
@@ -572,7 +572,7 @@ eat_num_int_cont(SajsLexer* const lexer,
   return is_digit(c) ? do_byte(lexer, c) : eat_num_int_end(lexer, frame, c);
 }
 
-static SajsResult
+static SajsEvent
 eat_num_frac_start(SajsLexer* const lexer,
                    SajsFrame* const frame,
                    uint8_t const    c)
@@ -581,7 +581,7 @@ eat_num_frac_start(SajsLexer* const lexer,
                      : do_nothing(SAJS_EXPECTED_DIGIT);
 }
 
-static SajsResult
+static SajsEvent
 eat_num_frac_cont(SajsLexer* const lexer,
                   SajsFrame* const frame,
                   uint8_t const    c)
@@ -591,7 +591,7 @@ eat_num_frac_cont(SajsLexer* const lexer,
                       : pop(lexer, SAJS_NUMBER, SAJS_RETRY, 0U);
 }
 
-static SajsResult
+static SajsEvent
 eat_num_exp_int_start(SajsLexer* const lexer,
                       SajsFrame* const frame,
                       uint8_t const    c)
@@ -600,7 +600,7 @@ eat_num_exp_int_start(SajsLexer* const lexer,
                      : do_nothing(SAJS_EXPECTED_DIGIT);
 }
 
-static SajsResult
+static SajsEvent
 eat_num_exp_start(SajsLexer* const lexer,
                   SajsFrame* const frame,
                   uint8_t const    c)
@@ -610,7 +610,7 @@ eat_num_exp_start(SajsLexer* const lexer,
            : eat_num_exp_int_start(lexer, frame, c);
 }
 
-static SajsResult
+static SajsEvent
 eat_num_exp_int_cont(SajsLexer* const lexer,
                      SajsFrame* const frame,
                      uint8_t const    c)
@@ -623,7 +623,7 @@ eat_num_exp_int_cont(SajsLexer* const lexer,
 
 /* Literals */
 
-static SajsResult
+static SajsEvent
 eat_literal(SajsLexer* const  lexer,
             SajsFrame* const  frame,
             size_t const      length,
@@ -637,19 +637,19 @@ eat_literal(SajsLexer* const  lexer,
            : do_byte(lexer, c);
 }
 
-static SajsResult
+static SajsEvent
 eat_false(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return eat_literal(lexer, frame, 5U, "false", c);
 }
 
-static SajsResult
+static SajsEvent
 eat_null(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return eat_literal(lexer, frame, 4U, "null", c);
 }
 
-static SajsResult
+static SajsEvent
 eat_true(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
 {
   return eat_literal(lexer, frame, 4U, "true", c);
@@ -659,7 +659,7 @@ eat_true(SajsLexer* const lexer, SajsFrame* const frame, uint8_t const c)
  * Interface
  */
 
-static SajsResult
+static SajsEvent
 sajs_process_byte(SajsLexer* const lexer, int const c)
 {
   SajsFrame* const frame = top_frame(lexer);
@@ -677,7 +677,7 @@ sajs_process_byte(SajsLexer* const lexer, int const c)
     return do_nothing(SAJS_SUCCESS);
   }
 
-  typedef SajsResult (*const SajsEatFunc)(SajsLexer*, SajsFrame*, uint8_t c);
+  typedef SajsEvent (*const SajsEatFunc)(SajsLexer*, SajsFrame*, uint8_t c);
 
   static SajsEatFunc handlers[SAJS_NUM_STATE] = {
     eat_start,
@@ -709,26 +709,26 @@ sajs_process_byte(SajsLexer* const lexer, int const c)
   return handlers[state](lexer, frame, (uint8_t)c);
 }
 
-SajsResult
+SajsEvent
 sajs_read_byte(SajsLexer* const lexer, int const byte)
 {
-  SajsResult r = sajs_process_byte(lexer, byte);
+  SajsEvent e = sajs_process_byte(lexer, byte);
 
-  if (r.status == SAJS_RETRY) {
-    SajsResult s = sajs_process_byte(lexer, byte);
-    r.status     = s.status;
-    if (r.event == SAJS_EVENT_END && s.event == SAJS_EVENT_END) {
-      r.kind  = s.kind;
-      r.event = SAJS_EVENT_DOUBLE_END;
+  if (e.status == SAJS_RETRY) {
+    SajsEvent f = sajs_process_byte(lexer, byte);
+    e.status    = f.status;
+    if (e.type == SAJS_EVENT_END && f.type == SAJS_EVENT_END) {
+      e.kind = f.kind;
+      e.type = SAJS_EVENT_DOUBLE_END;
     }
   }
 
-  return r;
+  return e;
 }
 
 SajsStringView
 sajs_string(SajsLexer const* const lexer)
 {
-  const SajsStringView string = {(char const*)lexer->bytes, lexer->num_bytes};
+  SajsStringView const string = {(char const*)lexer->bytes, lexer->num_bytes};
   return string;
 }

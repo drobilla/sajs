@@ -136,21 +136,21 @@ typedef enum {
      up to four bytes in UTF-8 encoding.
   */
   SAJS_EVENT_BYTES,
-} SajsEvent;
+} SajsEventType;
 
 /**
    Result of reading some input.
 
    This describes both the status of the read operation, and the output
-   produced, if any.  If the `event` field isn't #SAJS_EVENT_NOTHING, then the
+   produced, if any.  If the `type` field isn't #SAJS_EVENT_NOTHING, then the
    trailing fields describe the event.
 */
 typedef struct {
   SajsStatus    status : 8; ///< Status of operation
-  SajsEvent     event : 8;  ///< Event produced
+  SajsEventType type : 8;   ///< Event type produced
   SajsValueKind kind : 8;   ///< Start/end event value kind
   SajsFlags     flags : 8;  ///< Start event value flags
-} SajsResult;
+} SajsEvent;
 
 /**
    JSON reader state.
@@ -182,13 +182,13 @@ SAJS_API SajsLexer* SAJS_ALLOCATED
 sajs_lexer_init(size_t mem_size, void* SAJS_NONNULL mem);
 
 /**
-   Read one byte and return any result.
+   Read one byte and return any produced event.
 
    Accepts a single byte as an int, with -1 representing EOF, as with `fgetc`.
-   The returned struct includes the `status`, and possibly an `event` if
+   The returned struct includes the `status`, and possibly an event `type` if
    reading the character produced output.
 */
-SAJS_API SajsResult
+SAJS_API SajsEvent
 sajs_read_byte(SajsLexer* SAJS_NONNULL lexer, int byte);
 
 /**
@@ -269,9 +269,9 @@ typedef struct {
    optional whitespace), then write the `length` UTF-8 `bytes.
 */
 SAJS_API SajsTextOutput
-sajs_write_result(SajsWriter* SAJS_NONNULL writer,
-                  SajsResult               result,
-                  SajsStringView           string);
+sajs_write_event(SajsWriter* SAJS_NONNULL writer,
+                 SajsEvent                event,
+                 SajsStringView           string);
 
 /**
    @}

@@ -54,7 +54,7 @@ write_newline(unsigned const indent, FILE* const out_stream)
 
 // Write an output prefix (delimiter and whitespace) in normal or terse mode
 static int
-write_prefix(const SajsTextOutput out, bool terse, FILE* const out_stream)
+write_prefix(SajsTextOutput const out, bool terse, FILE* const out_stream)
 {
   switch (out.prefix) {
   case SAJS_PREFIX_NONE:
@@ -81,7 +81,7 @@ write_prefix(const SajsTextOutput out, bool terse, FILE* const out_stream)
 
 // Write an output fragment with prefix
 static SajsStatus
-write_output(const SajsTextOutput out, bool terse, FILE* const out_stream)
+write_output(SajsTextOutput const out, bool terse, FILE* const out_stream)
 {
   return write_prefix(out, terse, out_stream) ? SAJS_BAD_WRITE
          : (!out.length ||
@@ -92,13 +92,13 @@ write_output(const SajsTextOutput out, bool terse, FILE* const out_stream)
 
 // Update depth and return true if this was the end of the top value
 static bool
-update_depth(PipeState* const state, SajsResult const r)
+update_depth(PipeState* const state, SajsEvent const e)
 {
-  if (r.event == SAJS_EVENT_START) {
+  if (e.type == SAJS_EVENT_START) {
     ++state->depth;
-  } else if (r.event == SAJS_EVENT_END) {
+  } else if (e.type == SAJS_EVENT_END) {
     return !(state->depth -= 1U);
-  } else if (r.event == SAJS_EVENT_DOUBLE_END) {
+  } else if (e.type == SAJS_EVENT_DOUBLE_END) {
     return !(state->depth -= 2U);
   }
   return false;
@@ -112,14 +112,14 @@ run(PipeState* const state, FILE* const in_stream)
 
   SajsStatus st = SAJS_SUCCESS;
   while (!st) {
-    SajsResult const r = sajs_read_byte(state->lexer, fgetc(in_stream));
-    if (!(st = r.status)) {
+    SajsEvent const e = sajs_read_byte(state->lexer, fgetc(in_stream));
+    if (!(st = e.status)) {
       // Update state
-      bool const is_top_end = update_depth(state, r);
+      bool const is_top_end = update_depth(state, e);
 
       // Write output
       SajsStringView const string = sajs_string(state->lexer);
-      SajsTextOutput const out    = sajs_write_result(writer, r, string);
+      SajsTextOutput const out    = sajs_write_event(writer, e, string);
       st = write_output(out, state->terse, state->out_stream);
 
       if (!st && is_top_end) { // Write top-level trailing newline
