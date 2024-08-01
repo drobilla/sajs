@@ -19,11 +19,11 @@ struct SajsWriterImpl {
 static SajsTextOutput
 make_output(SajsStatus const      status,
             SajsTextPrefix        prefix,
-            unsigned const        indent,
+            unsigned const        depth,
             size_t const          length,
             SajsByte const* const bytes)
 {
-  SajsTextOutput const out = {status, indent, length, bytes, prefix};
+  SajsTextOutput const out = {status, depth, length, bytes, prefix};
   return out;
 }
 
@@ -47,12 +47,12 @@ emit_byte(SajsWriter* const writer, SajsByte const byte)
 static SajsTextOutput
 emit_sep(SajsWriter* const    writer,
          SajsTextPrefix const prefix,
-         unsigned const       indent,
+         unsigned const       depth,
          SajsByte const       byte)
 {
   writer->top_bytes[0] = byte;
   writer->top_bytes[1] = '\0';
-  return make_output(SAJS_SUCCESS, prefix, indent, 1U, writer->top_bytes);
+  return make_output(SAJS_SUCCESS, prefix, depth, 1U, writer->top_bytes);
 }
 
 // Write two adjacent bytes to the output

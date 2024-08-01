@@ -42,14 +42,14 @@ typedef struct {
 
 /// Write a newline with indentation
 static int
-write_newline(unsigned const indent, FILE* const out_stream)
+write_newline(unsigned const depth, FILE* const out_stream)
 {
   size_t written = fwrite("\n", 1U, 1U, out_stream);
-  for (unsigned i = 0U; i < indent; ++i) {
+  for (unsigned i = 0U; i < depth; ++i) {
     written += fwrite("  ", 1U, 2U, out_stream);
   }
 
-  return written != 1U + 2U * indent;
+  return written != 1U + 2U * depth;
 }
 
 // Write an output prefix (delimiter and whitespace) in normal or terse mode
@@ -64,7 +64,7 @@ write_prefix(SajsTextOutput const out, bool terse, FILE* const out_stream)
   case SAJS_PREFIX_ARRAY_START:
   case SAJS_PREFIX_OBJECT_END:
   case SAJS_PREFIX_ARRAY_END:
-    return terse ? 0 : write_newline(out.indent, out_stream);
+    return terse ? 0 : write_newline(out.depth, out_stream);
 
   case SAJS_PREFIX_MEMBER_COLON:
     return fwrite(": ", 1U, 2U - terse, out_stream) != 2U - terse;
@@ -73,7 +73,7 @@ write_prefix(SajsTextOutput const out, bool terse, FILE* const out_stream)
   case SAJS_PREFIX_ARRAY_COMMA:
     return (fwrite(",", 1U, 1U, out_stream) != 1U) ? 1
            : terse                                 ? 0
-                   : write_newline(out.indent, out_stream);
+                   : write_newline(out.depth, out_stream);
   }
 
   return 0;
