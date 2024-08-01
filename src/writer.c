@@ -183,24 +183,27 @@ sajs_write_event(SajsWriter* const    writer,
                  SajsEvent const      event,
                  SajsStringView const string)
 {
-  switch (event.type) {
-  case SAJS_EVENT_NOTHING:
-    break;
-  case SAJS_EVENT_START:
+  if (event.type == SAJS_EVENT_START) {
     return on_start(
       writer,
       event.kind,
       event.flags,
       (SajsByte)((event.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
-  case SAJS_EVENT_END:
+  }
+
+  if (event.type == SAJS_EVENT_END) {
     return on_end(
       writer,
       event.kind,
       (SajsByte)((event.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
-  case SAJS_EVENT_DOUBLE_END:
+  }
+
+  if (event.type == SAJS_EVENT_DOUBLE_END) {
     on_end(writer, writer->top_kind, '\0');
     return on_end(writer, event.kind, '\0');
-  case SAJS_EVENT_BYTES:
+  }
+
+  if (event.type == SAJS_EVENT_BYTES) {
     return (string.length == 1U) ? on_byte(writer, string.data[0])
                                  : make_output(SAJS_SUCCESS,
                                                SAJS_PREFIX_NONE,
