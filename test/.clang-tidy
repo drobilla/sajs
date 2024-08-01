@@ -4,4 +4,5 @@
 Checks: >
   -*-magic-numbers,
   -llvmlibc-restrict-system-libc-headers,
+  -readability-identifier-length,
 InheritParentConfig: true

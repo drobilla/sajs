@@ -31,8 +31,9 @@ static char const* const sajs_status_strings[SAJS_NUM_STATUS] = {
 };
 
 char const*
-sajs_strerror(SajsStatus const st)
+sajs_strerror(SajsStatus const status)
 {
-  return (unsigned)st < SAJS_NUM_STATUS ? sajs_status_strings[(unsigned)st]
-                                        : "Unknown error";
+  return (unsigned)status < SAJS_NUM_STATUS
+           ? sajs_status_strings[(unsigned)status]
+           : "Unknown error";
 }

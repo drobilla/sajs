@@ -166,7 +166,7 @@ typedef struct SajsLexerImpl SajsLexer;
    capitalized without a trailing period.
 */
 SAJS_API SAJS_CONST_FUNC char const* SAJS_NONNULL
-sajs_strerror(SajsStatus st);
+sajs_strerror(SajsStatus status);
 
 /**
    Set up a JSON lexer in provided memory.
@@ -184,12 +184,12 @@ sajs_lexer_init(size_t mem_size, void* SAJS_NONNULL mem);
 /**
    Read one byte and return any result.
 
-   Accepts a single character as an int, with -1 representing EOF, as with
-   `fgetc`.  The returned struct includes the `status`, and possibly an `event`
-   if reading the character produced output.
+   Accepts a single byte as an int, with -1 representing EOF, as with `fgetc`.
+   The returned struct includes the `status`, and possibly an `event` if
+   reading the character produced output.
 */
 SAJS_API SajsResult
-sajs_read_byte(SajsLexer* SAJS_NONNULL lexer, int c);
+sajs_read_byte(SajsLexer* SAJS_NONNULL lexer, int byte);
 
 /**
    A view of an immutable string slice with a length.
@@ -270,7 +270,7 @@ typedef struct {
 */
 SAJS_API SajsTextOutput
 sajs_write_result(SajsWriter* SAJS_NONNULL writer,
-                  SajsResult               r,
+                  SajsResult               result,
                   SajsStringView           string);
 
 /**

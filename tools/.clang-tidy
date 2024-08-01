@@ -8,4 +8,5 @@ Checks: >
   -concurrency-mt-unsafe,
   -llvmlibc-*,
   -readability-avoid-nested-conditional-operator,
+  -readability-identifier-length,
 InheritParentConfig: true

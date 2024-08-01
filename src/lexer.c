@@ -710,12 +710,12 @@ sajs_process_byte(SajsLexer* const lexer, int const c)
 }
 
 SajsResult
-sajs_read_byte(SajsLexer* const lexer, int const c)
+sajs_read_byte(SajsLexer* const lexer, int const byte)
 {
-  SajsResult r = sajs_process_byte(lexer, c);
+  SajsResult r = sajs_process_byte(lexer, byte);
 
   if (r.status == SAJS_RETRY) {
-    SajsResult s = sajs_process_byte(lexer, c);
+    SajsResult s = sajs_process_byte(lexer, byte);
     r.status     = s.status;
     if (r.event == SAJS_EVENT_END && s.event == SAJS_EVENT_END) {
       r.kind  = s.kind;

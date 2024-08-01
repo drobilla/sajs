@@ -9,5 +9,6 @@ Checks: >
   -hicpp-multiway-paths-covered,
   -hicpp-signed-bitwise,
   -readability-avoid-nested-conditional-operator,
+  -readability-identifier-length,
   -readability-non-const-parameter,
 InheritParentConfig: true

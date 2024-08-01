@@ -21,7 +21,7 @@ make_output(SajsStatus const  status,
             size_t const      length,
             char const* const bytes)
 {
-  const SajsTextOutput out = {status, indent, length, bytes, prefix};
+  SajsTextOutput const out = {status, indent, length, bytes, prefix};
   return out;
 }
 
@@ -178,23 +178,25 @@ sajs_writer_init(size_t const mem_size, void* const mem)
 
 SajsTextOutput
 sajs_write_result(SajsWriter* const    writer,
-                  SajsResult const     r,
+                  SajsResult const     result,
                   SajsStringView const string)
 {
-  switch (r.event) {
+  switch (result.event) {
   case SAJS_EVENT_NOTHING:
     break;
   case SAJS_EVENT_START:
-    return on_start(writer,
-                    r.kind,
-                    r.flags,
-                    (char)((r.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
+    return on_start(
+      writer,
+      result.kind,
+      result.flags,
+      (char)((result.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
   case SAJS_EVENT_END:
-    return on_end(
-      writer, r.kind, (char)((r.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
+    return on_end(writer,
+                  result.kind,
+                  (char)((result.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
   case SAJS_EVENT_DOUBLE_END:
     on_end(writer, writer->top_kind, '\0');
-    return on_end(writer, r.kind, '\0');
+    return on_end(writer, result.kind, '\0');
   case SAJS_EVENT_BYTES:
     return (string.length == 1U) ? on_byte(writer, string.data[0])
                                  : make_output(SAJS_SUCCESS,
