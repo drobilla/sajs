@@ -3,6 +3,8 @@
 
 #include "sajs/sajs.h"
 
+#define SAJS_NUM_STATUS 22U ///< The number of SajsStatus entries
+
 static char const* const sajs_status_strings[SAJS_NUM_STATUS] = {
   "Success",
   "Non-fatal failure",

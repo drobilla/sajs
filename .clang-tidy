@@ -3,7 +3,6 @@
 
 Checks: >
   *,
-  -*-macro-to-enum,
   -altera-*,
   -readability-identifier-length,
 CheckOptions:

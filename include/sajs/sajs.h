@@ -69,8 +69,6 @@ typedef enum {
   SAJS_EXPECTED_VALUE,         ///< Expected value
 } SajsStatus;
 
-#define SAJS_NUM_STATUS 22U ///< The number of SajsStatus entries
-
 /**
    Kind of JSON value.
 
