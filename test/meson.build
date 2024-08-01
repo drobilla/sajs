@@ -1,4 +1,4 @@
-# Copyright 2021-2023 David Robillard <d@drobilla.net>
+# Copyright 2021-2024 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 ############
@@ -54,6 +54,40 @@ if get_option('lint')
     test('pylint', pylint, args: pylint_args + python_scripts, suite: 'scripts')
   endif
 endif
+
+##########
+# Header #
+##########
+
+# Set up warning suppressions for header test
+header_suppressions = []
+if cc.get_id() in ['clang', 'emscripten']
+  if warning_level == 'everything'
+    header_suppressions += ['-Wno-padded']
+    if not meson.is_cross_build()
+      header_suppressions += ['-Wno-poison-system-directories']
+    endif
+  endif
+  if warning_level in ['everything', '3']
+    header_suppressions += ['-Wno-nullability-extension']
+  endif
+elif cc.get_id() == 'gcc'
+  if warning_level == 'everything'
+    header_suppressions += ['-Wno-padded']
+  endif
+endif
+
+# Test that header builds with stricter warnings
+test(
+  'test_header',
+  executable(
+    'test_header',
+    files('headers/test_header.c'),
+    c_args: header_suppressions,
+    dependencies: sajs_dep,
+    include_directories: include_dirs,
+  ),
+)
 
 ##############
 # Unit Tests #
