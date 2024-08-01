@@ -43,7 +43,7 @@
 #  define SAJS_ALLOCATED ///< A new pointer (only null if out of memory)
 #endif
 
-/** Status code. */
+/// Status code
 typedef enum {
   SAJS_SUCCESS,                ///< Success
   SAJS_FAILURE,                ///< Non-fatal failure
@@ -83,9 +83,7 @@ typedef enum {
   SAJS_LITERAL = 5U, ///< Literal value (false, null, or true)
 } SajsValueKind;
 
-/**
-   Flags describing an event and/or value.
-*/
+/// Flags describing an event and/or value
 typedef enum {
   SAJS_IS_MEMBER_NAME  = 1U << 0U, ///< Object member name
   SAJS_IS_MEMBER_VALUE = 1U << 1U, ///< Object member value
@@ -94,9 +92,10 @@ typedef enum {
   SAJS_HAS_BYTES       = 1U << 4U, ///< Event has bytes
 } SajsFlag;
 
-/** Bitwise OR of SajsFlag values. */
+/// Bitwise OR of SajsFlag values
 typedef unsigned SajsFlags;
 
+/// Event type
 typedef enum {
   /**
      Ignored input.
@@ -148,8 +147,8 @@ typedef enum {
 typedef struct {
   SajsStatus    status : 8; ///< Status of operation
   SajsEventType type : 8;   ///< Event type produced
-  SajsValueKind kind : 8;   ///< Start/end event value kind
-  SajsFlags     flags : 8;  ///< Start event value flags
+  SajsValueKind kind : 8;   ///< Value kind
+  SajsFlags     flags : 8;  ///< Value flags
 } SajsEvent;
 
 /**
@@ -191,9 +190,7 @@ sajs_lexer_init(size_t mem_size, void* SAJS_NONNULL mem);
 SAJS_API SajsEvent
 sajs_read_byte(SajsLexer* SAJS_NONNULL lexer, int byte);
 
-/**
-   A view of an immutable string slice with a length.
-*/
+/// A view of an immutable string slice with a length
 typedef struct {
   char const* SAJS_NONNULL data;   ///< Pointer to the first character
   size_t                   length; ///< Length of string in bytes
@@ -226,9 +223,7 @@ typedef struct SajsWriterImpl SajsWriter;
 SAJS_API SajsWriter* SAJS_ALLOCATED
 sajs_writer_init(size_t mem_size, void* SAJS_NONNULL mem);
 
-/**
-   A prefix of some text output.
-*/
+/// A prefix of some text output
 typedef enum {
   SAJS_PREFIX_NONE,
   SAJS_PREFIX_OBJECT_START, ///< Space before first object element
