@@ -1,4 +1,4 @@
-# Copyright 2021-2023 David Robillard <d@drobilla.net>
+# Copyright 2021-2024 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 project(
@@ -33,6 +33,7 @@ if cc.get_id() in ['clang', 'emscripten']
     c_suppressions += [
       '-Wno-declaration-after-statement',
       '-Wno-padded',
+      '-Wno-switch-default',
       '-Wno-unsafe-buffer-usage',
     ]
 

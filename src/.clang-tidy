@@ -3,9 +3,10 @@
 
 Checks: >
   -*-magic-numbers,
-  -android-cloexec-fopen,
-  -bugprone-assignment-in-if-condition,
-  -concurrency-mt-unsafe,
-  -llvmlibc-*,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
+  -hicpp-multiway-paths-covered,
+  -hicpp-signed-bitwise,
   -readability-avoid-nested-conditional-operator,
+  -readability-non-const-parameter,
 InheritParentConfig: true

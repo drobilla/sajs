@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEFAULT_STACK_SIZE 1024U
+static unsigned const default_stack_size = 1024U;
 
 // GCC print format attributes
 #if defined(__MINGW32__)
@@ -267,7 +267,7 @@ main(int const argc, char** const argv)
 {
   // Parse command line options
   char const* const name = argv[0];
-  PipeOptions       opts = {NULL, DEFAULT_STACK_SIZE, false};
+  PipeOptions       opts = {NULL, default_stack_size, false};
   int const         a    = parse_args(&opts, argc, argv);
   if (a <= 0) {
     return a;
