@@ -7,19 +7,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
+typedef char SajsByte;
+
 struct SajsWriterImpl {
   unsigned      depth;        ///< Container depth
   SajsValueKind top_kind;     ///< Current value kind
   SajsFlags     top_flags;    ///< Current string/number/literal flags
-  char          top_bytes[8]; ///< Last written character bytes
+  SajsByte      top_bytes[8]; ///< Last written character bytes
 };
 
 static SajsTextOutput
-make_output(SajsStatus const  status,
-            SajsTextPrefix    prefix,
-            unsigned const    indent,
-            size_t const      length,
-            char const* const bytes)
+make_output(SajsStatus const      status,
+            SajsTextPrefix        prefix,
+            unsigned const        indent,
+            size_t const          length,
+            SajsByte const* const bytes)
 {
   SajsTextOutput const out = {status, indent, length, bytes, prefix};
   return out;
@@ -34,7 +36,7 @@ emit_nothing(void)
 
 // Write a single byte to the output
 static SajsTextOutput
-emit_byte(SajsWriter* const writer, char const byte)
+emit_byte(SajsWriter* const writer, SajsByte const byte)
 {
   writer->top_bytes[0] = byte;
   writer->top_bytes[1] = '\0';
@@ -46,7 +48,7 @@ static SajsTextOutput
 emit_sep(SajsWriter* const    writer,
          SajsTextPrefix const prefix,
          unsigned const       indent,
-         char const           byte)
+         SajsByte const       byte)
 {
   writer->top_bytes[0] = byte;
   writer->top_bytes[1] = '\0';
@@ -55,7 +57,7 @@ emit_sep(SajsWriter* const    writer,
 
 // Write two adjacent bytes to the output
 static SajsTextOutput
-emit_pair(SajsWriter* const writer, char const a, char const b)
+emit_pair(SajsWriter* const writer, SajsByte const a, SajsByte const b)
 {
   writer->top_bytes[0U] = a;
   writer->top_bytes[1U] = b;
@@ -69,7 +71,7 @@ static SajsTextOutput
 on_start(SajsWriter* const   writer,
          SajsValueKind const type,
          SajsFlags const     flags,
-         char const          head)
+         SajsByte const      head)
 {
   writer->top_kind  = type;
   writer->top_flags = flags;
@@ -100,7 +102,7 @@ on_start(SajsWriter* const   writer,
 
 // Called on characters in a value
 static SajsTextOutput
-on_byte(SajsWriter* const writer, char const byte)
+on_byte(SajsWriter* const writer, SajsByte const byte)
 {
   if (writer->top_kind != SAJS_STRING) {
     // Write syntactic (non-string) character directly
@@ -134,8 +136,8 @@ on_byte(SajsWriter* const writer, char const byte)
   writer->top_bytes[1U] = 'u';
   writer->top_bytes[2U] = '0';
   writer->top_bytes[3U] = '0';
-  writer->top_bytes[4U] = (char)('0' + (((uint8_t)byte & 0xF0U) >> 4U));
-  writer->top_bytes[5U] = (char)('0' + ((uint8_t)byte & 0x0FU));
+  writer->top_bytes[4U] = (SajsByte)('0' + (((uint8_t)byte & 0xF0U) >> 4U));
+  writer->top_bytes[5U] = (SajsByte)('0' + ((uint8_t)byte & 0x0FU));
   writer->top_bytes[6U] = '\0';
   return make_output(
     SAJS_SUCCESS, SAJS_PREFIX_NONE, writer->depth, 6U, writer->top_bytes);
@@ -143,7 +145,7 @@ on_byte(SajsWriter* const writer, char const byte)
 
 // Called when a value is finished
 static SajsTextOutput
-on_end(SajsWriter* const writer, SajsValueKind const type, char const tail)
+on_end(SajsWriter* const writer, SajsValueKind const type, SajsByte const tail)
 {
   writer->top_flags = 0U;
 
@@ -189,11 +191,12 @@ sajs_write_event(SajsWriter* const    writer,
       writer,
       event.kind,
       event.flags,
-      (char)((event.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
+      (SajsByte)((event.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
   case SAJS_EVENT_END:
-    return on_end(writer,
-                  event.kind,
-                  (char)((event.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
+    return on_end(
+      writer,
+      event.kind,
+      (SajsByte)((event.flags & SAJS_HAS_BYTES) ? string.data[0] : 0));
   case SAJS_EVENT_DOUBLE_END:
     on_end(writer, writer->top_kind, '\0');
     return on_end(writer, event.kind, '\0');
