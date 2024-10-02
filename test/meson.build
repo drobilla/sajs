@@ -75,6 +75,12 @@ elif cc.get_id() == 'gcc'
   if warning_level == 'everything'
     header_suppressions += ['-Wno-padded']
   endif
+elif cc.get_id() == 'msvc'
+  if warning_level == 'everything'
+    c_suppressions += [
+      '/wd4820', # padding added after construct
+    ]
+  endif
 endif
 
 # Test that header builds with stricter warnings
