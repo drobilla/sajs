@@ -6,19 +6,21 @@
 ############
 
 if get_option('lint')
+  if not meson.is_subproject()
+    # Check licensing metadata
+    reuse = find_program('reuse', required: false)
+    if reuse.found()
+      test(
+        'REUSE',
+        reuse,
+        args: ['--root', sajs_src_root, 'lint'],
+        suite: 'data',
+      )
+    endif
+  endif
+
   python_script_names = ['test_parse.py', 'test_thru.py']
   python_scripts = files(python_script_names)
-
-  # Check licensing metadata
-  reuse = find_program('reuse', required: false)
-  if reuse.found()
-    test(
-      'REUSE',
-      reuse,
-      args: ['--root', sajs_src_root, 'lint'],
-      suite: 'data',
-    )
-  endif
 
   # Check script formatting
   black = find_program('black', required: false)
