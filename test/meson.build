@@ -79,7 +79,7 @@ elif cc.get_id() == 'gcc'
   endif
 elif cc.get_id() == 'msvc'
   if warning_level == 'everything'
-    c_suppressions += [
+    header_suppressions += [
       '/wd4820', # padding added after construct
     ]
   endif
