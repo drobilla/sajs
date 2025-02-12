@@ -172,7 +172,7 @@ sajs_dep = declare_dependency(
   link_with: libsajs,
 )
 
-# Generage pkg-config file for external dependants
+# Generate pkg-config file for external dependants
 pkg.generate(
   libsajs,
   description: 'Low-level streaming JSON reader and writer',
