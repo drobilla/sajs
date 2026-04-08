@@ -31,8 +31,8 @@
 #  define SAJS_CONST_FUNC __attribute__((const))
 #  define SAJS_MALLOC_FUNC __attribute__((malloc))
 #else
-#  define SAJS_PURE_FUNC  ///< Only reads memory
-#  define SAJS_CONST_FUNC ///< Only reads its parameters
+#  define SAJS_PURE_FUNC   ///< Only reads memory
+#  define SAJS_CONST_FUNC  ///< Only reads its parameters
 #  define SAJS_MALLOC_FUNC ///< Returns a non-aliasing pointer
 #endif
 
