@@ -117,6 +117,7 @@ if (
     get_option('stdlib').disabled()
     or (
       get_option('stdlib').auto()
+      and cc.get_id() != 'clang'
       and not get_option('b_coverage')
       and get_option('b_sanitize') == 'none'
     )
