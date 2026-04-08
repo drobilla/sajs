@@ -1,4 +1,4 @@
-// Copyright 2017-2023 David Robillard <d@drobilla.net>
+// Copyright 2017-2026 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "sajs/sajs.h"
@@ -15,7 +15,7 @@
 static unsigned const default_stack_size = 1024U;
 
 // GCC print format attributes
-#if defined(__MINGW32__)
+#ifdef __MINGW32__
 #  define SAJS_LOG_FUNC(fmt, a0) __attribute__((format(gnu_printf, fmt, a0)))
 #elif defined(__GNUC__)
 #  define SAJS_LOG_FUNC(fmt, a0) __attribute__((format(printf, fmt, a0)))
@@ -49,7 +49,7 @@ write_newline(unsigned const depth, FILE* const out_stream)
     written += fwrite("  ", 1U, 2U, out_stream);
   }
 
-  return written != 1U + 2U * depth;
+  return written != 1U + (2U * depth);
 }
 
 // Write an output prefix (delimiter and whitespace) in normal or terse mode
@@ -72,7 +72,7 @@ write_prefix(SajsTextOutput const out, bool terse, FILE* const out_stream)
   case SAJS_PREFIX_MEMBER_COMMA:
   case SAJS_PREFIX_ARRAY_COMMA:
     return (fwrite(",", 1U, 1U, out_stream) != 1U) ? 1
-           : terse                                 ? 0
+           : terse ? 0
                    : write_newline(out.depth, out_stream);
   }
 
@@ -216,15 +216,18 @@ parse_flag(PipeOptions* const opts,
       return missing_arg(name, 'k');
     }
 
-    char const* const string = argv[a + 1];
-    char*             endptr = NULL;
-    long const        size   = strtol(string, &endptr, 10);
-    if (size <= 0 || size == LONG_MAX || *endptr != '\0') {
-      log_error("%s: invalid size \"%s\"\n\n", name, string);
-      return print_usage(name, true);
+    {
+      char const* const string = argv[a + 1];
+      char*             endptr = NULL;
+      long const        size   = strtol(string, &endptr, 10);
+      if (size <= 0 || size == LONG_MAX || *endptr != '\0') {
+        log_error("%s: invalid size \"%s\"\n\n", name, string);
+        return print_usage(name, true);
+      }
+
+      opts->stack_size = (size_t)size;
     }
 
-    opts->stack_size = (size_t)size;
     return 2;
 
   case 'o':
