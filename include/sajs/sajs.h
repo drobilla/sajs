@@ -252,9 +252,9 @@ typedef enum {
 typedef struct {
   SajsStatus               status; ///< Status of write operation
   unsigned                 depth;  ///< Container depth / indent level
+  SajsTextPrefix           prefix; ///< Text prefix (before bytes)
   size_t                   length; ///< Length of bytes
   char const* SAJS_NONNULL bytes;  ///< UTF-8 bytes
-  SajsTextPrefix           prefix; ///< Text prefix (before bytes)
 } SajsTextOutput;
 
 /**

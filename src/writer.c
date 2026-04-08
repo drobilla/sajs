@@ -1,4 +1,4 @@
-// Copyright 2017-2023 David Robillard <d@drobilla.net>
+// Copyright 2017-2026 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "sajs/sajs.h"
@@ -6,6 +6,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+#  define TEXT_OUTPUT(...) (SajsTextOutput{__VA_ARGS__})
+#else
+#  define TEXT_OUTPUT(...) ((SajsTextOutput){__VA_ARGS__})
+#endif
 
 typedef char SajsByte;
 
@@ -16,22 +22,11 @@ struct SajsWriterImpl {
   SajsByte      top_bytes[8]; ///< Last written character bytes
 };
 
-static SajsTextOutput
-make_output(SajsStatus const      status,
-            SajsTextPrefix        prefix,
-            unsigned const        depth,
-            size_t const          length,
-            SajsByte const* const bytes)
-{
-  SajsTextOutput const out = {status, depth, length, bytes, prefix};
-  return out;
-}
-
 // Write nothing, return success
 static SajsTextOutput
 emit_nothing(void)
 {
-  return make_output(SAJS_SUCCESS, SAJS_PREFIX_NONE, 0U, 0U, "");
+  return TEXT_OUTPUT(SAJS_SUCCESS, 0U, SAJS_PREFIX_NONE, 0U, "");
 }
 
 // Write a single byte to the output
@@ -40,7 +35,7 @@ emit_byte(SajsWriter* const writer, SajsByte const byte)
 {
   writer->top_bytes[0] = byte;
   writer->top_bytes[1] = '\0';
-  return make_output(SAJS_SUCCESS, SAJS_PREFIX_NONE, 0U, 1U, writer->top_bytes);
+  return TEXT_OUTPUT(SAJS_SUCCESS, 0U, SAJS_PREFIX_NONE, 1U, writer->top_bytes);
 }
 
 // Write a separator followed by a byte to the output
@@ -52,7 +47,7 @@ emit_sep(SajsWriter* const    writer,
 {
   writer->top_bytes[0] = byte;
   writer->top_bytes[1] = '\0';
-  return make_output(SAJS_SUCCESS, prefix, depth, 1U, writer->top_bytes);
+  return TEXT_OUTPUT(SAJS_SUCCESS, depth, prefix, 1U, writer->top_bytes);
 }
 
 // Write two adjacent bytes to the output
@@ -63,7 +58,7 @@ emit_pair(SajsWriter* const writer, SajsByte const a, SajsByte const b)
   writer->top_bytes[1U] = b;
   writer->top_bytes[2U] = '\0';
 
-  return make_output(SAJS_SUCCESS, SAJS_PREFIX_NONE, 0U, 2U, writer->top_bytes);
+  return TEXT_OUTPUT(SAJS_SUCCESS, 0U, SAJS_PREFIX_NONE, 2U, writer->top_bytes);
 }
 
 // Called when a value is started
@@ -139,8 +134,8 @@ on_byte(SajsWriter* const writer, SajsByte const byte)
   writer->top_bytes[4U] = (SajsByte)('0' + (((uint8_t)byte & 0xF0U) >> 4U));
   writer->top_bytes[5U] = (SajsByte)('0' + ((uint8_t)byte & 0x0FU));
   writer->top_bytes[6U] = '\0';
-  return make_output(
-    SAJS_SUCCESS, SAJS_PREFIX_NONE, writer->depth, 6U, writer->top_bytes);
+  return TEXT_OUTPUT(
+    SAJS_SUCCESS, writer->depth, SAJS_PREFIX_NONE, 6U, writer->top_bytes);
 }
 
 // Called when a value is finished
@@ -205,12 +200,14 @@ sajs_write_event(SajsWriter* const    writer,
 
   if (event.type == SAJS_EVENT_BYTES) {
     return (string.length == 1U) ? on_byte(writer, string.data[0])
-                                 : make_output(SAJS_SUCCESS,
-                                               SAJS_PREFIX_NONE,
+                                 : TEXT_OUTPUT(SAJS_SUCCESS,
                                                0U,
+                                               SAJS_PREFIX_NONE,
                                                string.length,
                                                string.data);
   }
 
   return emit_nothing();
 }
+
+#undef TEXT_OUTPUT
